@@ -131,4 +131,51 @@ class InvoiceController extends Controller
             'message' => 'Invoice deleted',
         ]);
     }
+    public function sendEmail(Request $request, Invoice $invoice)
+    {
+        // Verify ownership
+        if ($invoice->workspace_id !== $request->user()->workspace->id) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+        
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'message' => 'nullable|string|max:1000',
+        ]);
+        
+        try {
+            $invoice->load(['items', 'customer', 'workspace']);
+            
+            $mailer = new \App\Mail\InvoiceMail($invoice, $validated['message'] ?? '');
+            $html = $mailer->build();
+            
+            $apiKey = env('RESEND_API_KEY');
+            if (!$apiKey) {
+                return response()->json(['success' => false, 'message' => 'Email service not configured'], 500);
+            }
+            
+            $resend = \Resend::client($apiKey);
+            
+            $resend->emails->send([
+                'from' => 'Invoxa <onboarding@resend.dev>',
+                'to' => [$validated['email']],
+                'subject' => 'Invoice ' . $invoice->invoice_number . ' from ' . $invoice->workspace->name,
+                'html' => $html,
+            ]);
+            
+            // Update status to sent
+            $invoice->update(['status' => 'sent']);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Invoice sent successfully',
+                'data' => $invoice->fresh()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send email: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

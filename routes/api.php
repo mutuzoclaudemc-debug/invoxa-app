@@ -28,8 +28,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
 
     Route::apiResource('invoices', InvoiceController::class);
+    Route::post('invoices/{invoice}/send-email', [InvoiceController::class, 'sendEmail']);
     Route::apiResource('customers', CustomerController::class);
     Route::apiResource('products', ProductController::class);
-
+    
     Route::get('/dashboard/metrics', [DashboardController::class, 'metrics']);
 });
