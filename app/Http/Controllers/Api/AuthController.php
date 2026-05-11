@@ -91,5 +91,46 @@ class AuthController extends Controller
             'success' => true,
             'data' => $request->user()->load('workspace'),
         ]);
+        
     }
+    public function updateProfile(Request $request)
+{
+    $user = $request->user();
+    
+    $validated = $request->validate([
+        'first_name' => 'sometimes|string|max:255',
+        'last_name' => 'sometimes|string|max:255',
+        'email' => 'sometimes|email|unique:users,email,' . $user->id,
+        'current_password' => 'required_with:password|string',
+        'password' => 'sometimes|string|min:8|confirmed',
+    ]);
+    
+    // Verify current password if changing password
+    if (isset($validated['password'])) {
+        if (!\Hash::check($validated['current_password'], $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Current password is incorrect'
+            ], 422);
+        }
+        $validated['password'] = \Hash::make($validated['password']);
+    }
+    
+    unset($validated['current_password']);
+    
+    // Update name field if first/last changed
+    if (isset($validated['first_name']) || isset($validated['last_name'])) {
+        $first = $validated['first_name'] ?? $user->first_name;
+        $last = $validated['last_name'] ?? $user->last_name;
+        $validated['name'] = trim($first . ' ' . $last);
+    }
+    
+    $user->update($validated);
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Profile updated successfully',
+        'data' => $user->fresh()
+    ]);
+}
 }
