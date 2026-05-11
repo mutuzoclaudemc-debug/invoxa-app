@@ -26,6 +26,22 @@ class InvoiceController extends Controller
 
     public function store(Request $request)
     {
+        $workspace = $request->user()->workspace;
+        
+        // Check plan limit
+        if (!$workspace->canCreateInvoice()) {
+            $limits = $workspace->getLimits();
+            return response()->json([
+                'success' => false,
+                'message' => 'You have reached your monthly invoice limit. Upgrade to Pro for unlimited invoices.',
+                'error_code' => 'PLAN_LIMIT_REACHED',
+                'data' => [
+                    'current_plan' => $workspace->plan,
+                    'invoices_used' => $workspace->invoices_this_month,
+                    'invoices_limit' => $limits['invoices_per_month'],
+                ]
+            ], 403);
+        }
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'issue_date' => 'required|date',
@@ -70,6 +86,7 @@ class InvoiceController extends Controller
             'tax_amount' => $taxAmount,
             'total_amount' => $totalAmount,
         ]);
+        $workspace->incrementInvoiceCount();
 
         foreach ($validated['items'] as $itemData) {
             $itemSubtotal = $itemData['quantity'] * $itemData['unit_price'];

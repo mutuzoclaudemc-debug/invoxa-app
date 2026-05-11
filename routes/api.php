@@ -28,7 +28,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
-
+    Route::get('plan/current', [App\Http\Controllers\Api\PlanController::class, 'current']);
+    Route::post('plan/upgrade', [App\Http\Controllers\Api\PlanController::class, 'upgrade']);
     Route::apiResource('invoices', InvoiceController::class);
     Route::post('invoices/{invoice}/send-email', [InvoiceController::class, 'sendEmail']);
     Route::get('invoices/{invoice}/share-token', [App\Http\Controllers\Api\InvoiceController::class, 'getShareToken']);
