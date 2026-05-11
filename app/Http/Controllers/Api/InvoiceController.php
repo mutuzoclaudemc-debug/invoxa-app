@@ -237,5 +237,29 @@ class InvoiceController extends Controller
                 'invoice_number' => $invoice->invoice_number,
             ]
         ]);
+        public function downloadPdf(Invoice $invoice, Request $request)
+    {
+        // For public access via token (no auth)
+        if ($request->has('token')) {
+            $parts = explode('-', $request->token, 2);
+            if (count($parts) !== 2 || (int)$parts[0] !== $invoice->id) {
+                abort(404);
+            }
+            $expectedHash = substr(md5($invoice->id . $invoice->invoice_number . $invoice->created_at), 0, 12);
+            if ($parts[1] !== $expectedHash) {
+                abort(404);
+            }
+        } else {
+            // Auth check for logged-in users
+            if (!$request->user() || $invoice->workspace_id !== $request->user()->workspace->id) {
+                abort(403);
+            }
+        }
+
+        $invoice->load(['items', 'customer', 'workspace']);
+        
+        $pdf = \PDF::loadView('invoices.pdf', ['invoice' => $invoice]);
+        return $pdf->download($invoice->invoice_number . '.pdf');
+    }
     }
 }

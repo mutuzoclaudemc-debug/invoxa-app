@@ -24,7 +24,17 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 // Public route - no auth needed
 Route::get('public/invoices/{token}', [App\Http\Controllers\Api\InvoiceController::class, 'publicView']);
 // Protected routes (require authentication)
+Route::get('public/invoices/{invoice}/pdf', [App\Http\Controllers\Api\InvoiceController::class, 'downloadPdf']);
 Route::middleware('auth:sanctum')->group(function () {
+    // Admin routes
+Route::get('admin/dashboard', [App\Http\Controllers\Api\AdminController::class, 'dashboard']);
+Route::get('admin/subscribers', [App\Http\Controllers\Api\AdminController::class, 'subscribers']);
+Route::post('admin/billing/send/{workspaceId}', [App\Http\Controllers\Api\AdminController::class, 'sendBillingInvoice']);
+Route::post('admin/billing/send-all', [App\Http\Controllers\Api\AdminController::class, 'sendBillingToAll']);
+Route::put('admin/users/{userId}/role', [App\Http\Controllers\Api\AdminController::class, 'updateUserRole']);
+
+// Invoice PDF download
+Route::get('invoices/{invoice}/pdf', [App\Http\Controllers\Api\InvoiceController::class, 'downloadPdf']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
