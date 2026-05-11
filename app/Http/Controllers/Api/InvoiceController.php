@@ -178,4 +178,47 @@ class InvoiceController extends Controller
             ], 500);
         }
     }
+    public function publicView(string $token)
+    {
+        // Token format: invoice_id-hash (e.g., "5-abc123")
+        $parts = explode('-', $token, 2);
+        if (count($parts) !== 2) {
+            return response()->json(['success' => false, 'message' => 'Invalid link'], 404);
+        }
+        
+        $invoice = Invoice::with(['items', 'customer', 'workspace'])->find($parts[0]);
+        
+        if (!$invoice) {
+            return response()->json(['success' => false, 'message' => 'Invoice not found'], 404);
+        }
+        
+        // Verify hash to prevent ID guessing
+        $expectedHash = substr(md5($invoice->id . $invoice->invoice_number . $invoice->created_at), 0, 12);
+        if ($parts[1] !== $expectedHash) {
+            return response()->json(['success' => false, 'message' => 'Invalid link'], 404);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'data' => $invoice
+        ]);
+    }
+    
+    public function getShareToken(Invoice $invoice, Request $request)
+    {
+        if ($invoice->workspace_id !== $request->user()->workspace->id) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+        
+        $hash = substr(md5($invoice->id . $invoice->invoice_number . $invoice->created_at), 0, 12);
+        $token = $invoice->id . '-' . $hash;
+        
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'token' => $token,
+                'invoice_number' => $invoice->invoice_number,
+            ]
+        ]);
+    }
 }

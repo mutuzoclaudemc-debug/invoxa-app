@@ -21,6 +21,8 @@ Route::get('/health', function () {
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 
+// Public route - no auth needed
+Route::get('public/invoices/{token}', [App\Http\Controllers\Api\InvoiceController::class, 'publicView']);
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
@@ -29,6 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('invoices', InvoiceController::class);
     Route::post('invoices/{invoice}/send-email', [InvoiceController::class, 'sendEmail']);
+    Route::get('invoices/{invoice}/share-token', [App\Http\Controllers\Api\InvoiceController::class, 'getShareToken']);
     Route::apiResource('customers', CustomerController::class);
     Route::apiResource('products', ProductController::class);
     
