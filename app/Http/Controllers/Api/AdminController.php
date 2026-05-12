@@ -30,7 +30,7 @@ class AdminController extends Controller
                 'pro_subscribers' => Workspace::where('plan', 'pro')->count(),
                 'business_subscribers' => Workspace::where('plan', 'business')->count(),
                 'total_invoices' => Invoice::count(),
-                'monthly_revenue' => (Workspace::where('plan', 'pro')->count() * 15000) + (Workspace::where('plan', 'business')->count() * 35000),
+                'monthly_revenue' => (Workspace::where('plan', 'pro')->count() * 10000) + (Workspace::where('plan', 'business')->count() * 20000),
             ]
         ]);
     }
@@ -80,7 +80,7 @@ class AdminController extends Controller
             return response()->json(['success' => false, 'message' => 'Cannot bill free plan workspaces'], 400);
         }
 
-        $price = $workspace->plan === 'pro' ? 15000 : 35000;
+        $price = $workspace->plan === 'pro' ? 10000 : 20000;
         $planName = ucfirst($workspace->plan);
         
         try {
@@ -130,7 +130,7 @@ class AdminController extends Controller
 
         foreach ($workspaces as $workspace) {
             try {
-                $price = $workspace->plan === 'pro' ? 15000 : 35000;
+                -$price = $workspace->plan === 'pro' ? 10000 : 20000;
                 $planName = ucfirst($workspace->plan);
                 
                 $html = view('emails.billing-invoice', [

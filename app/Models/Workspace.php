@@ -33,13 +33,13 @@ class Workspace extends Model
             'invoices_per_month' => -1, // unlimited
             'max_users' => 5,
             'custom_branding' => true,
-            'price' => 15000,
+            'price' => 10000,
         ],
         'business' => [
             'invoices_per_month' => -1,
             'max_users' => -1,
             'custom_branding' => true,
-            'price' => 35000,
+            'price' => 20000,
         ],
     ];
 
