@@ -46,6 +46,7 @@ Route::get('invoices/{invoice}/pdf', [App\Http\Controllers\Api\InvoiceController
     Route::get('invoices/{invoice}/share-token', [App\Http\Controllers\Api\InvoiceController::class, 'getShareToken']);
     Route::apiResource('customers', CustomerController::class);
     Route::apiResource('products', ProductController::class);
-    
+    Route::apiResource('quotations', App\Http\Controllers\Api\QuotationController::class);
+    Route::post('quotations/{quotation}/convert-to-invoice', [App\Http\Controllers\Api\QuotationController::class, 'convertToInvoice']);
     Route::get('/dashboard/metrics', [DashboardController::class, 'metrics']);
 });
