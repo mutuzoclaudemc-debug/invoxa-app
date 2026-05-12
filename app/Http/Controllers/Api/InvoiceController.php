@@ -236,7 +236,8 @@ class InvoiceController extends Controller
                 'token' => $token,
                 'invoice_number' => $invoice->invoice_number,
             ]
-        ]);
+        ]);}
+
         public function downloadPdf(Invoice $invoice, Request $request)
     {
         // For public access via token (no auth)
@@ -262,4 +263,3 @@ class InvoiceController extends Controller
         return $pdf->download($invoice->invoice_number . '.pdf');
     }
     }
-}

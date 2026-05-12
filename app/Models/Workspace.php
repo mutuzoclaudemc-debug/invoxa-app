@@ -7,10 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class Workspace extends Model
 {
     protected $fillable = [
-        'name', 'owner_id', 'plan', 'currency',
-        'plan_status', 'plan_expires_at',
-        'invoices_this_month', 'last_invoice_month'
-    ];
+    'name', 'owner_id', 'plan', 'currency',
+    'plan_status', 'plan_expires_at',
+    'invoices_this_month', 'last_invoice_month',
+    'logo_url', 'company_email', 'company_phone',
+    'company_address', 'tax_id', 'website',
+    'invoice_footer', 'brand_color',
+    'bank_name', 'bank_account_number', 'bank_account_name',
+];
 
     protected $casts = [
         'plan_expires_at' => 'datetime',

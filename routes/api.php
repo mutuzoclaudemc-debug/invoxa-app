@@ -32,7 +32,8 @@ Route::get('admin/subscribers', [App\Http\Controllers\Api\AdminController::class
 Route::post('admin/billing/send/{workspaceId}', [App\Http\Controllers\Api\AdminController::class, 'sendBillingInvoice']);
 Route::post('admin/billing/send-all', [App\Http\Controllers\Api\AdminController::class, 'sendBillingToAll']);
 Route::put('admin/users/{userId}/role', [App\Http\Controllers\Api\AdminController::class, 'updateUserRole']);
-
+Route::get('workspace', [App\Http\Controllers\Api\WorkspaceController::class, 'show']);
+Route::put('workspace', [App\Http\Controllers\Api\WorkspaceController::class, 'update']);
 // Invoice PDF download
 Route::get('invoices/{invoice}/pdf', [App\Http\Controllers\Api\InvoiceController::class, 'downloadPdf']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
