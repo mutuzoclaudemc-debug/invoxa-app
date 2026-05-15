@@ -58,4 +58,14 @@ class Invoice extends Model
     {
         return $this->belongsTo(User::class, 'created_by_id');
     }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function getBalanceDueAttribute(): float
+    {
+        return max(0, (float)$this->total_amount - (float)$this->amount_paid);
+    }
 }

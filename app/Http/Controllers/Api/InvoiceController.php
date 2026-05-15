@@ -13,10 +13,22 @@ class InvoiceController extends Controller
     {
         $workspace = $request->user()->workspace;
 
-        $invoices = Invoice::where('workspace_id', $workspace->id)
-            ->with(['customer', 'items'])
-            ->latest()
-            ->paginate(15);
+        $query = Invoice::where('workspace_id', $workspace->id)
+            ->with(['customer', 'items']);
+
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(function ($q) use ($s) {
+                $q->where('invoice_number', 'like', "%{$s}%")
+                  ->orWhereHas('customer', fn($c) => $c->where('name', 'like', "%{$s}%"));
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $invoices = $query->latest()->paginate(15);
 
         return response()->json([
             'success' => true,
