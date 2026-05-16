@@ -41,8 +41,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/auth/profile',   [AuthController::class, 'updateProfile']);
 
     // Workspace
-    Route::get('workspace', [App\Http\Controllers\Api\WorkspaceController::class, 'show']);
-    Route::put('workspace', [App\Http\Controllers\Api\WorkspaceController::class, 'update']);
+    Route::get('workspace',            [App\Http\Controllers\Api\WorkspaceController::class, 'show']);
+    Route::put('workspace',            [App\Http\Controllers\Api\WorkspaceController::class, 'update']);
+    Route::post('workspace/logo',      [App\Http\Controllers\Api\WorkspaceController::class, 'uploadLogo']);
+    Route::delete('workspace/logo',    [App\Http\Controllers\Api\WorkspaceController::class, 'removeLogo']);
 
     // Plan
     Route::get('plan/current', [App\Http\Controllers\Api\PlanController::class, 'current']);
