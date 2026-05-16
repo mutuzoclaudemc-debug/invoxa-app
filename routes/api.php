@@ -52,6 +52,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Dashboard
     Route::get('/dashboard/metrics', [DashboardController::class, 'metrics']);
+    Route::get('/dashboard/reports', [DashboardController::class, 'reports']);
 
     // Invoices (full CRUD + share/email/PDF)
     Route::apiResource('invoices', InvoiceController::class);

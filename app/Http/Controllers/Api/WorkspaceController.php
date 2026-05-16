@@ -35,6 +35,11 @@ class WorkspaceController extends Controller
             'bank_name'          => 'nullable|string|max:255',
             'bank_account_number'=> 'nullable|string|max:255',
             'bank_account_name'  => 'nullable|string|max:255',
+            'tax_type'           => 'nullable|string|in:on_total,per_item',
+            'tax_rate'           => 'nullable|numeric|min:0|max:100',
+            'tax_label'          => 'nullable|string|max:50',
+            'tax_inclusive'      => 'nullable|boolean',
+            'invoice_template'   => 'nullable|string|in:classic,sharp,compact,bold,wave,redmond,clean',
         ]);
 
         $workspace->update($validated);
