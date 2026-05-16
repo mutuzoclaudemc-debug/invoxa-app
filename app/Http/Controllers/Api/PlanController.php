@@ -11,21 +11,32 @@ class PlanController extends Controller
     public function current(Request $request)
     {
         $workspace = $request->user()->workspace;
-        $limits = $workspace->getLimits();
-        
+        $limits    = $workspace->getLimits();
+        $isPaid    = $limits['invoices_per_month'] === -1;
+
+        // For free plan, the actual cap includes referral bonus
+        $effectiveLimit = $isPaid ? -1 : $workspace->freeCap();
+        $used           = $workspace->invoices_this_month;
+        $remaining      = $isPaid ? 'unlimited' : max(0, $effectiveLimit - $used);
+
         return response()->json([
             'success' => true,
             'data' => [
-                'current_plan' => $workspace->plan,
-                'plan_status' => $workspace->plan_status,
+                'current_plan'    => $workspace->plan,
+                'plan_status'     => $workspace->plan_status,
                 'plan_expires_at' => $workspace->plan_expires_at,
-                'limits' => $limits,
+                'limits'          => array_merge($limits, ['invoices_per_month' => $effectiveLimit]),
                 'usage' => [
-                    'invoices_this_month' => $workspace->invoices_this_month,
-                    'invoices_limit' => $limits['invoices_per_month'],
-                    'invoices_remaining' => $limits['invoices_per_month'] === -1 
-                        ? 'unlimited' 
-                        : max(0, $limits['invoices_per_month'] - $workspace->invoices_this_month),
+                    'invoices_this_month' => $used,
+                    'invoices_limit'      => $effectiveLimit,
+                    'invoices_remaining'  => $remaining,
+                ],
+                'referral' => [
+                    'code'          => $workspace->referral_code,
+                    'bonus_invoices'=> (int)$workspace->referral_bonus_invoices,
+                    'referral_count'=> (int)$workspace->referral_count,
+                    'max_free'      => Workspace::FREE_MAX_INVOICES,
+                    'base_free'     => Workspace::FREE_BASE_INVOICES,
                 ],
                 'all_plans' => Workspace::PLAN_LIMITS,
             ]

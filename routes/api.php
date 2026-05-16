@@ -50,6 +50,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('plan/current', [App\Http\Controllers\Api\PlanController::class, 'current']);
     Route::post('plan/upgrade', [App\Http\Controllers\Api\PlanController::class, 'upgrade']);
 
+    // Referral
+    Route::get('referral', [App\Http\Controllers\Api\ReferralController::class, 'info']);
+
     // Dashboard
     Route::get('/dashboard/metrics', [DashboardController::class, 'metrics']);
     Route::get('/dashboard/reports', [DashboardController::class, 'reports']);

@@ -14,36 +14,61 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:8|confirmed',
-            'first_name' => 'required|string',
-            'last_name' => 'required|string',
+            'email'         => 'required|email|unique:users',
+            'password'      => 'required|min:8|confirmed',
+            'first_name'    => 'required|string',
+            'last_name'     => 'required|string',
+            'referral_code' => 'nullable|string|max:10',
         ]);
 
         $user = User::create([
-            'name' => $validated['first_name'] . ' ' . $validated['last_name'],
+            'name'       => $validated['first_name'] . ' ' . $validated['last_name'],
             'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
+            'last_name'  => $validated['last_name'],
+            'email'      => $validated['email'],
+            'password'   => Hash::make($validated['password']),
         ]);
 
+        // Find referrer if a valid referral code was provided
+        $referrer  = null;
+        $bonusForNewUser = 0;
+        $referralCode = strtoupper(trim($validated['referral_code'] ?? ''));
+
+        if ($referralCode) {
+            $referrer = Workspace::where('referral_code', $referralCode)->first();
+        }
+
+        if ($referrer) {
+            $referrerCurrentBonus = (int)$referrer->referral_bonus_invoices;
+            // Cap referrer at MAX_REFERRAL_BONUS extra invoices
+            if ($referrerCurrentBonus < Workspace::MAX_REFERRAL_BONUS) {
+                $referrer->increment('referral_bonus_invoices', Workspace::REFERRAL_BONUS_EACH);
+            }
+            $referrer->increment('referral_count');
+            $bonusForNewUser = Workspace::REFERRAL_BONUS_EACH;
+        }
+
         $workspace = Workspace::create([
-            'name' => $validated['first_name'] . "'s Workspace",
-            'owner_id' => $user->id,
-            'plan' => 'free',
-            'currency' => 'USD',
+            'name'                    => $validated['first_name'] . "'s Workspace",
+            'owner_id'                => $user->id,
+            'plan'                    => 'free',
+            'currency'                => 'RWF',
+            'referral_code'           => Workspace::generateReferralCode(),
+            'referred_by'             => $referrer ? $referralCode : null,
+            'referral_bonus_invoices' => $bonusForNewUser,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'success' => true,
-            'message' => 'User registered successfully',
+            'message' => $referrer
+                ? 'Account created! You got ' . ($bonusForNewUser + Workspace::FREE_BASE_INVOICES) . ' free invoices thanks to your referral.'
+                : 'Account created! You have ' . Workspace::FREE_BASE_INVOICES . ' free invoices to get started.',
             'data' => [
-                'user' => $user,
+                'user'      => $user,
                 'workspace' => $workspace,
-                'token' => $token,
+                'token'     => $token,
             ],
         ], 201);
     }
